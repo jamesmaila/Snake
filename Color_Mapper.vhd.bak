@@ -1,0 +1,83 @@
+---------------------------------------------------------------------------
+--    Color_Mapper.vhd                                                   --
+--    Stephen Kempf                                                      --
+--    3-1-06                                                             --
+--												 --
+--    Modified by David Kesler - 7-16-08						 --
+--                                                                       --
+--    Spring 2013 Distribution                                             --
+--                                                                       --
+--    For use with ECE 385 Lab 9                                         --
+--    University of Illinois ECE Department                              --
+---------------------------------------------------------------------------
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_ARITH.ALL;
+use IEEE.STD_LOGIC_SIGNED.ALL;
+
+entity Color_Mapper is
+   Port ( BallX : in std_logic_vector(9 downto 0);
+          BallY : in std_logic_vector(9 downto 0);
+			 FoodX : in std_logic_vector(9 downto 0);
+          FoodY : in std_logic_vector(9 downto 0);
+          DrawX : in std_logic_vector(9 downto 0); -- These are the beam inputs
+          DrawY : in std_logic_vector(9 downto 0);
+          Ball_size : in std_logic_vector(9 downto 0);
+			 Food_size : in std_logic_vector(9 downto 0);
+			 direction : in std_logic_vector(3 downto 0);
+          Red   : out std_logic_vector(9 downto 0);
+          Green : out std_logic_vector(9 downto 0);
+          Blue  : out std_logic_vector(9 downto 0) );
+end Color_Mapper;
+
+architecture Behavioral of Color_Mapper is
+
+signal Ball_on : std_logic;
+signal Food_on : std_logic;
+
+begin
+
+
+  Ball_on_proc : process (BallX, BallY, DrawX, DrawY, Ball_size)
+  begin
+   if ((((DrawX - BallX) * (DrawX - BallX)) + ((DrawY - BallY) * (DrawY - BallY))) <= (Ball_Size*Ball_Size)) then
+          Ball_on <= '1';
+    else
+      Ball_on <= '0';
+    end if;
+  end process Ball_on_proc;
+  
+   Food_on_proc : process (FoodX, FoodY, DrawX, DrawY, Food_size)
+  begin
+
+if ((DrawX >= FoodX - Food_size) AND
+    (DrawX <= FoodX + Food_size) AND
+    (DrawY >= FoodY - Food_size) AND
+    (DrawY <= FoodY + Food_size)) then 
+         Food_on <= '1';
+else
+	Food_on <= '0';
+end if;
+end process Food_on_proc;
+
+
+  RGB_Display : process (Ball_on, DrawX, DrawY)
+  begin
+    if (Ball_on = '1') then -- blue ball
+      Red <= "0000000000";
+      Green <= "1010101010";
+      Blue <= "0101010101";
+	elsif (Food_on = '1') then
+      Red <= "1111111111";
+      Green <= "0000000000";
+      Blue <= "0000000000";
+      
+    else          -- gradient background
+      Red   <= DrawX(9 downto 0);
+      Green <= DrawX(9 downto 0);
+      Blue  <= DrawX(9 downto 0);
+    end if;   
+  end process RGB_Display;
+  
+end Behavioral;

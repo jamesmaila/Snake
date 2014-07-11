@@ -1,0 +1,93 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_ARITH.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
+
+entity ball is
+   Port ( Reset : in std_logic;
+			 direction : in std_logic_vector(3 downto 0);
+          frame_clk : in std_logic;
+          BallX : out std_logic_vector(9 downto 0);
+          BallY : out std_logic_vector(9 downto 0);
+          BallS : out std_logic_vector(9 downto 0) );
+end ball;
+
+architecture Behavioral of ball is
+
+signal Ball_X_pos, Ball_X_motion, Ball_Y_pos, Ball_Y_motion : std_logic_vector(9 downto 0);
+signal Ball_Size : std_logic_vector(9 downto 0);
+
+constant Ball_X_Center : std_logic_vector(9 downto 0) := CONV_STD_LOGIC_VECTOR(320, 10);  --Center position on the X axis
+constant Ball_Y_Center : std_logic_vector(9 downto 0) := CONV_STD_LOGIC_VECTOR(240, 10);  --Center position on the Y axis
+
+constant Ball_X_Min    : std_logic_vector(9 downto 0) := CONV_STD_LOGIC_VECTOR(0, 10);  --Leftmost point on the X axis
+constant Ball_X_Max    : std_logic_vector(9 downto 0) := CONV_STD_LOGIC_VECTOR(639, 10);  --Rightmost point on the X axis
+constant Ball_Y_Min    : std_logic_vector(9 downto 0) := CONV_STD_LOGIC_VECTOR(0, 10);   --Topmost point on the Y axis
+constant Ball_Y_Max    : std_logic_vector(9 downto 0) := CONV_STD_LOGIC_VECTOR(479, 10);  --Bottommost point on the Y axis
+                              
+constant Ball_X_Step   : std_logic_vector(9 downto 0) := CONV_STD_LOGIC_VECTOR(1, 10);  --Step size on the X axis
+constant Ball_Y_Step   : std_logic_vector(9 downto 0) := CONV_STD_LOGIC_VECTOR(1, 10);  --Step size on the Y axis
+
+signal collision : std_logic;
+
+begin
+  Ball_Size <= CONV_STD_LOGIC_VECTOR(6, 10); 
+  Move_Ball: process(Reset, frame_clk, Ball_Size, direction)
+  begin
+    -- asynchronous reset
+    if(Reset = '1' or collision = '1') then   
+      Ball_Y_Motion <= "0000000000";
+      Ball_X_Motion <= "0000000000";
+      Ball_Y_Pos <= Ball_Y_Center;
+      Ball_X_pos <= Ball_X_Center;
+		collision <= '0';
+
+
+    elsif(rising_edge(frame_clk)) then
+		-- collisions
+      if   (Ball_Y_Pos + Ball_Size >= Ball_Y_Max) then -- Ball is at the bottom edge, BOUNCE!
+			collision <= '1';
+		elsif(Ball_Y_Pos - Ball_Size <= Ball_Y_Min) then  -- Ball is at the top edge, BOUNCE!
+			collision <= '1';
+      elsif   (Ball_X_Pos + Ball_Size >= Ball_X_Max) then -- Ball is at the right edge, BOUNCE!
+			collision <= '1';
+      elsif(Ball_X_Pos - Ball_Size <= Ball_X_Min) then  -- Ball is at the left edge, BOUNCE!
+			collision <= '1';
+		
+		-- left
+		elsif( direction = "1000") then 
+			Ball_X_Motion <= not(Ball_X_Step) + '1';
+			Ball_Y_Motion <= "0000000000";
+		-- down
+		elsif(direction = "0100") then 
+			Ball_X_Motion <= "0000000000";
+			Ball_Y_Motion <= Ball_Y_Step;
+		-- up
+      elsif( direction = "0001") then
+			Ball_Y_Motion <= not(Ball_Y_Step) + '1';
+			Ball_X_Motion <= "0000000000";
+		-- right
+		elsif(direction = "0010") then 
+        Ball_Y_Motion <= "0000000000";
+        Ball_X_Motion <= Ball_X_Step; 
+
+
+      -- keep current trajectory
+      else
+        Ball_X_Motion <= Ball_X_Motion; 
+        Ball_Y_Motion <= Ball_Y_Motion;
+      end if;
+
+		-- update ball position 
+      Ball_Y_pos <= Ball_Y_pos + Ball_Y_Motion; 
+      Ball_X_pos <= Ball_X_pos + Ball_X_Motion;
+       
+    end if;
+  
+  end process Move_Ball;
+
+  BallX <= Ball_X_Pos;
+  BallY <= Ball_Y_Pos;
+  BallS <= Ball_Size;
+ 
+end Behavioral;      

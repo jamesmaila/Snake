@@ -1,0 +1,143 @@
+---------------------------------------------------------------------------
+--      BouncingBall.vhd                                                 --
+--      Viral Mehta                                                      --
+--      Spring 2005                                                      --
+--                                                                       --
+--      Modified by Stephen Kempf 03-01-2006                             --
+--                                03-12-2007                             --
+--      Fall 2012 Distribution                                           --
+--                                                                       --
+--      For use with ECE 385 Lab 9                                       --
+--      UIUC ECE Department                                              --
+---------------------------------------------------------------------------
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_ARITH.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
+
+entity BouncingBall is
+    Port ( Clk : in std_logic;
+			  direction : in std_logic_vector(3 downto 0);
+           Reset : in std_logic;
+			  Start_game : in std_logic;
+           Red   : out std_logic_vector(9 downto 0);
+           Green : out std_logic_vector(9 downto 0);
+           Blue  : out std_logic_vector(9 downto 0);
+           VGA_clk : out std_logic; 
+           sync : out std_logic;
+           blank : out std_logic;
+           vs : out std_logic;
+           hs : out std_logic );
+end BouncingBall;
+
+architecture Behavioral of BouncingBall is
+
+component ball is
+    Port ( Reset : in std_logic;
+			  direction : in std_logic_vector(3 downto 0);
+           frame_clk : in std_logic;
+           BallX : out std_logic_vector(9 downto 0);
+           BallY : out std_logic_vector(9 downto 0);
+           BallS : out std_logic_vector(9 downto 0) );
+end component;
+
+component Food is
+   Port ( Reset : in std_logic;
+          frame_clk : in std_logic;
+			 BallX : in std_logic_vector(9 downto 0);
+          BallY : in std_logic_vector(9 downto 0);
+          BallS : in std_logic_vector(9 downto 0);
+          FoodX : out std_logic_vector(9 downto 0);
+          FoodY : out std_logic_vector(9 downto 0);
+          FoodS : out std_logic_vector(9 downto 0) );
+end component;
+
+
+component vga_controller is
+    Port ( clk : in std_logic;
+           reset : in std_logic;
+           hs : out std_logic;
+           vs : out std_logic;
+           pixel_clk : out std_logic;
+           blank : out std_logic;
+           sync : out std_logic;
+           DrawX : out std_logic_vector(9 downto 0);
+           DrawY : out std_logic_vector(9 downto 0));
+end component;
+
+component Color_Mapper is
+   Port ( BallX : in std_logic_vector(9 downto 0);
+          BallY : in std_logic_vector(9 downto 0);
+			 FoodX : in std_logic_vector(9 downto 0);
+          FoodY : in std_logic_vector(9 downto 0);
+          direction : in std_logic_vector(3 downto 0);
+          DrawX : in std_logic_vector(9 downto 0); 
+          DrawY : in std_logic_vector(9 downto 0);
+          Ball_size : in std_logic_vector(9 downto 0);
+			 Food_size : in std_logic_vector(9 downto 0);
+          Red   : out std_logic_vector(9 downto 0);
+          Green : out std_logic_vector(9 downto 0);
+          Blue  : out std_logic_vector(9 downto 0) );
+end component;
+
+
+
+signal Reset_h, vsSig : std_logic;
+signal DrawXSig, DrawYSig, BallXSig, BallYSig, BallSSig : std_logic_vector(9 downto 0);
+signal FoodXSig, FoodYSig, FoodSSig : std_logic_vector(9 downto 0);
+
+begin
+
+Reset_h <= not Reset; -- The push buttons are active low
+
+vgaSync_instance : vga_controller
+   Port map(clk => clk,
+            reset => Reset_h,
+            hs => hs,
+            vs => vsSig,
+            pixel_clk => VGA_clk,
+            blank => blank,
+            sync => sync,
+            DrawX => DrawXSig,
+            DrawY => DrawYSig);
+
+ball_instance : ball
+   Port map(Reset => Reset_h,
+				direction => direction,
+            frame_clk => vsSig, -- Vertical Sync used as an "ad hoc" 60 Hz clock signal
+            BallX => BallXSig,  --   (This is why we registered it in the vga controller!)
+            BallY => BallYSig,
+            BallS => BallSSig );
+				
+Food_instance : food
+   Port map( Reset => Reset_h,
+          frame_clk => vsSig,
+            BallX => BallXSig,  
+            BallY => BallYSig,
+            BallS => BallSSig,
+          FoodX => FoodXSig,
+          FoodY => FoodYSig,
+          FoodS => FoodSSig );
+
+
+Color_instance : Color_Mapper
+   Port Map(BallX => BallXSig,
+            BallY => BallYSig,
+				FoodX => FoodXSig,
+				FoodY => FoodYSig,
+				direction => direction,
+            DrawX => DrawXSig,
+            DrawY => DrawYSig,
+            Ball_size => BallSSig,
+				Food_size => FoodSSig,
+            Red => Red,
+            Green => Green,
+            Blue => Blue );
+
+
+
+vs <= vsSig;
+
+
+end Behavioral;      

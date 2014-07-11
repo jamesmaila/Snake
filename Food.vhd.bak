@@ -1,0 +1,81 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_ARITH.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
+use IEEE.numeric_std.all;
+
+
+entity Food is
+   Port ( Reset : in std_logic;
+          frame_clk : in std_logic;
+			 BallX : in std_logic_vector(9 downto 0);
+          BallY : in std_logic_vector(9 downto 0);
+          BallS : in std_logic_vector(9 downto 0);
+          FoodX : out std_logic_vector(9 downto 0);
+          FoodY : out std_logic_vector(9 downto 0);
+          FoodS : out std_logic_vector(9 downto 0) );
+end Food;
+
+architecture Behavioral of Food is
+
+signal new_food : std_logic;
+
+signal rand_x : std_logic_vector(9 downto 0);
+signal rand_y : std_logic_vector(9 downto 0);
+
+signal Food_X_pos, Food_Y_pos : std_logic_vector(9 downto 0);
+signal Food_Size : std_logic_vector(9 downto 0);
+constant Food_X_Center : std_logic_vector(9 downto 0) := CONV_STD_LOGIC_VECTOR(320, 10);  --Center position on the X axis
+constant Food_Y_Center : std_logic_vector(9 downto 0) := CONV_STD_LOGIC_VECTOR(240, 10);  --Center position on the Y axis
+constant Food_X_Min    : std_logic_vector(9 downto 0) := CONV_STD_LOGIC_VECTOR(0, 10);  --Leftmost point on the X axis
+constant Food_X_Max    : std_logic_vector(9 downto 0) := CONV_STD_LOGIC_VECTOR(639, 10);  --Rightmost point on the X axis
+constant Food_Y_Min    : std_logic_vector(9 downto 0) := CONV_STD_LOGIC_VECTOR(0, 10);   --Topmost point on the Y axis
+constant Food_Y_Max    : std_logic_vector(9 downto 0) := CONV_STD_LOGIC_VECTOR(479, 10);  --Bottommost point on the Y axis
+                              
+										
+begin
+	Food_Size <= CONV_STD_LOGIC_VECTOR(4, 10); 
+
+	random_num_gen : process(frame_clk)
+		variable rand_temp : std_logic_vector(9 downto 0):=(9 => '1',others => '0');
+		variable temp : std_logic := '0';
+	begin
+		if(rising_edge(frame_clk)) then
+			temp := rand_temp(9) xor rand_temp(8);
+			rand_temp(9 downto 1) := rand_temp(8 downto 0);
+			rand_temp(0) := temp;
+		end if;
+		rand_x <= rand_temp;
+		rand_y <= conv_std_LOGIC_VECTOR(conv_integer(rand_x)*7, 10);
+	end process random_num_gen;  
+  
+  
+
+  parse_food : process(Reset, new_food, frame_clk, Food_Size)
+  begin
+    -- generate food location
+    if(Reset = '1' or new_food = '1') then   
+	 	 Food_X_pos <= conv_std_LOGIC_VECTOR(conv_integer(rand_x) mod 620, 10);
+	 	 Food_Y_pos <= conv_std_LOGIC_VECTOR(conv_integer(rand_y) mod 460, 10);
+		 new_food <= '0';
+		 
+    elsif(rising_edge(frame_clk)) then
+
+		if ((BallX >= Food_X_pos - Food_size - 1) AND
+			(BallX <= Food_X_pos + Food_size + 1) AND
+			(BallY >= Food_Y_pos - Food_size - 1) AND
+			(BallY <= Food_Y_pos + Food_size + 1)) then 
+					new_food <= '1';
+		else
+			new_food <=  '0';
+		end if;
+	 
+	 end if;
+
+  end process parse_food;
+
+  FoodX <= Food_X_pos;
+  FoodY <= Food_Y_pos;
+  FoodS <= Food_Size;
+ 
+end Behavioral;      

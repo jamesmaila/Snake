@@ -1,0 +1,63 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_ARITH.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
+use work.header.all;
+
+entity Tail is
+   Port ( Reset : in std_logic;
+          frame_clk : in std_logic;
+			 BallX : in std_logic_vector(9 downto 0);
+          BallY: in std_logic_vector(9 downto 0);
+			 BallX_prev : in std_logic_vector(9 downto 0);
+          BallY_prev : in std_logic_vector(9 downto 0);
+          BallS : in std_logic_vector(9 downto 0);
+			 size : in integer;
+			 tail_coords_x : out tail_coords_t;
+			 tail_coords_y : out tail_coords_t );
+end Tail;
+
+architecture Behavioral of Tail is
+
+	signal tail_coords_x_h : tail_coords_t; 
+	signal tail_coords_y_h : tail_coords_t; 
+
+begin
+
+	grow_tail : process(Reset, size)
+	begin
+	
+		
+	end process grow_tail;
+
+
+
+	handle_tail : process(Reset, frame_clk)
+	
+	begin
+		
+		if (Reset = '1') then
+
+			
+			tail_coords_x_h(2) <= CONV_STD_LOGIC_VECTOR(332, 10);
+			tail_coords_y_h(2) <= CONV_STD_LOGIC_VECTOR(240, 10);
+			
+			tail_coords_x_h(3) <= CONV_STD_LOGIC_VECTOR(342, 10);
+			tail_coords_y_h(3) <= CONV_STD_LOGIC_VECTOR(240, 10);
+			
+		elsif(rising_edge(frame_clk) and Reset = '0') then
+		
+			for I in 1 to 20 loop
+				tail_coords_x_h(I) <= tail_coords_x_h(I-1);
+				tail_coords_y_h(I) <= tail_coords_y_h(I-1);
+			end loop;
+				tail_coords_x_h(0) <= BallX_prev;
+				tail_coords_y_h(0) <= BallY_prev;
+		end if;
+		
+	end process handle_tail;
+	
+	tail_coords_x <= tail_coords_x_h;
+	tail_coords_y <= tail_coords_y_h;
+
+end Behavioral;
