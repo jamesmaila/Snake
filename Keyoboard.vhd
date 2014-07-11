@@ -1,37 +1,3 @@
-------------------------------------------------------------------------------------------
--- KeyboardVhdl adapted from:
---
--- Keyboard.vhd -- 	Author:  Ken Nelson
--- Copyright 2004 Digilent, Inc.
--- Revision History:
--- 06/14/04 (Created) KenN
--- 07/01/04 (Optomized) DanP
---
--- Edited by Patrick Goh 10/31/08
---  - extracted keyCode
---  - modified to work with the Altera DE2 board
---
--- Edited by David Kesler 11/17/08 to..uh...work at all.
--- Input/Output Explanation:
--- Input:   CLK - Master Clock (50MHz)
---          RST - Reset (enable HIGH)
---          ps2data  - ps2data
---          ps2clk  - ps2clock
---
--- Output:  keyCode - captured 8-bit keycode from keyboard
---          (These do not need to be mapped to pins of you do not need to see them.)
---
---
--- Notes:
--- keyCode captures the makecode and x"F0" but not the breakcode
---    On the breakcode, keyCode is cleared.
--- keyCode can be reset using NewKeyAck.  This will suppress seeing any new key until a break code
---    is seen
--- This entity does NOT properly handle multiple keys being pressed at once.
---
---
-------------------------------------------------------------------------------------------
-
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.STD_LOGIC_ARITH.ALL;
