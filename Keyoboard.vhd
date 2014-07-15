@@ -5,15 +5,12 @@ use IEEE.STD_LOGIC_UNSIGNED.ALL;
 
 entity keyboardVhdl is
 	Port (	CLK, RST, ps2Data, ps2Clk, NewKeyAck: in std_logic;
-				keyCode : out std_logic_vector(7 downto 0);
-				newKeyOut : out std_logic);
-end keyboardVhdl;
+		keyCode : out std_logic_vector(7 downto 0);
+		newKeyOut : out std_logic );
+end keyboardVhdl; 
 
 architecture Behavioral of keyboardVhdl is
 	
-	------------------------------------------------------------------------
-	-- Signal Declarations
-	------------------------------------------------------------------------
 	signal clkDiv : std_logic_vector (12 downto 0);
 	signal pclk : std_logic;
 	signal DFF1, DFF2 : std_logic;
@@ -23,9 +20,6 @@ architecture Behavioral of keyboardVhdl is
 	signal enable : std_logic;
 	signal newKey, acceptNewKey : std_logic;
 	
-	------------------------------------------------------------------------
-	-- Module Implementation
-	------------------------------------------------------------------------
 
 	begin
 	--Divide the master clock down to a lower frequency--
@@ -88,11 +82,11 @@ architecture Behavioral of keyboardVhdl is
 				WaitReg <= ShiftRegSig1(8 downto 1);
 		
 				if(ShiftRegSig2(8 downto 1) /= x"F0" and NewKeyAck /= '1' and acceptNewKey = '1') then		-- Last code read was not x"F0"
-					keyCode <= ShiftRegSig1(8 downto 1);		-- Capture makecode
+					keyCode <= ShiftRegSig1(8 downto 1); -- Capture makecode
 					newKey <= '1';
 					acceptNewKey <= '0';
-				elsif (ShiftRegSig2(8 downto 1) = x"F0") then				-- Last code read was x"F0"
-					keyCode <= x"00";	-- breakcode is not captured to avoid implementation of handshaking
+				elsif (ShiftRegSig2(8 downto 1) = x"F0") then -- Last code read was x"F0"
+					keyCode <= x"00"; -- breakcode is not captured to avoid implementation of handshaking
 					newKey <= '0';
 					acceptNewKey <= '1';
 				elsif (newKeyAck = '1') then
@@ -103,10 +97,6 @@ architecture Behavioral of keyboardVhdl is
 		end if;
 	end Process;
 
-
 	newKeyOut <= newKey;
-
-
-
 
 end Behavioral;
