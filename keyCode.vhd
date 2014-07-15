@@ -4,8 +4,8 @@ use IEEE.STD_LOGIC_ARITH.ALL;
 use IEEE.STD_LOGIC_UNSIGNED.ALL;
 
 entity keyCode is -- identifies the key code
-		port(current_code:  in std_logic_vector(7 downto 0);
-			  direction : out std_logic_vector(3 downto 0) );
+		port( current_code:  in std_logic_vector(7 downto 0);
+		      direction : out std_logic_vector(3 downto 0) );
 end keyCode;
 
 architecture keyCode_Behavioral of keyCode is
