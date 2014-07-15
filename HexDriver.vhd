@@ -4,7 +4,7 @@ use IEEE.NUMERIC_STD.ALL;
 
 entity hexdriver is
 	Port ( In0 : in std_logic_vector(3 downto 0);
-			 Out0 : out std_logic_vector(6 downto 0) );
+	       Out0 : out std_logic_vector(6 downto 0) );
 end HexDriver;
 
 architecture Behavioral of HexDriver is
